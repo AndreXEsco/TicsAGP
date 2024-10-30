@@ -28,29 +28,50 @@ $chocoPrograms = @(
     "microsoft-teams-new-bootstrapper"
 )
 
-# Instalación de programas con Chocolatey con barra de progreso
-$totalPrograms = $chocoPrograms.Count
-$currentProgram = 0
+# Función para instalar programas
+function Install-Programs {
+    param (
+        [string[]]$programs
+    )
 
-foreach ($program in $chocoPrograms) {
-    try {
-        $currentProgram++
-        Write-Host "Instalando $program..."
-        
-        # Inicia la instalación del programa
-        choco install $program -y
-        
-        # Actualiza la barra de progreso
-        $progress = [math]::Round(($currentProgram / $totalPrograms) * 100)
-        Write-Progress -Activity "Instalando programas" -Status "$program instalado" -PercentComplete $progress
-        
-        Write-Host "$program instalado correctamente."
-    } catch {
-        Write-Host "Error al instalar $program $_"
+    $totalPrograms = $programs.Count
+    $currentProgram = 0
+    $failedPrograms = @()
+
+    foreach ($program in $programs) {
+        try {
+            $currentProgram++
+            Write-Host "Instalando $program..."
+            
+            # Inicia la instalación del programa
+            choco install $program -y
+            
+            # Actualiza la barra de progreso
+            $progress = [math]::Round(($currentProgram / $totalPrograms) * 100)
+            Write-Progress -Activity "Instalando programas" -Status "$program instalado" -PercentComplete $progress
+            
+            Write-Host "$program instalado correctamente."
+        } catch {
+            Write-Host "Error al instalar $program: $_"
+            $failedPrograms += $program
+        }
     }
+
+    return $failedPrograms
 }
+
+# Instalación de programas
+$failedPrograms = Install-Programs -programs $chocoPrograms
+
+# Mensaje final
+Write-Host "Instalación completa. Todos los programas han sido instalados."
+if ($failedPrograms.Count -gt 0) {
+    Write-Host "Los siguientes programas no se pudieron instalar: $($failedPrograms -join ', ')"
+}
+Write-Host "Developed By TRSHWKUP O_O."
+Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.0 Desplegada 05/10/2024"
 
 # Mensaje final
 Write-Host "Instalación completa. Todos los programas han sido instalados."
 Write-Host "Developed By TRSHWKUP O_O."
-Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.0 Desplegada 05/10/2024"
+Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.1 Desplegada 30/10/2024"
