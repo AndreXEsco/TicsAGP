@@ -25,7 +25,7 @@ $chocoPrograms = @(
     "webview2-runtime",
     "lightshot",
     "anydesk",
-    "microsoft-teams"
+    "microsoft-teams-new-bootstrapper"
 )
 
 # Instalación de programas con Chocolatey con barra de progreso
