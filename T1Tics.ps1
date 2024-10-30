@@ -52,7 +52,7 @@ function Install-Programs {
             
             Write-Host "$program instalado correctamente."
         } catch {
-            Write-Host "Error al instalar $program: $_"
+            Write-Host "Error al instalar $program $_"
             $failedPrograms += $program
         }
     }
