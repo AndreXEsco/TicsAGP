@@ -43,22 +43,40 @@ function Install-Programs {
         try {
             $currentProgram++
             Write-Host "Instalando $program..."
+
+            # Comando de instalación con omisión de checksum
+            $chocoCommand = "choco install $program -y --ignore-checksums"
             
-            # Elegir el comando según si es una instalación o actualización
+            # Si estamos actualizando, modificamos el comando
             if ($update) {
-                choco upgrade $program -y
-                Write-Host "$program actualizado correctamente."
-            } else {
-                choco install $program -y
-                Write-Host "$program instalado correctamente."
+                $chocoCommand = "choco upgrade $program -y --ignore-checksums"
             }
             
+            # Ejecutar el comando de instalación/actualización
+            Invoke-Expression $chocoCommand
+            Write-Host "$program instalado/actualizado correctamente."
+
             # Actualiza la barra de progreso
             $progress = [math]::Round(($currentProgram / $totalPrograms) * 100)
             Write-Progress -Activity "Instalando programas" -Status "$program instalado" -PercentComplete $progress
 
         } catch {
-            Write-Host "Error al instalar $program $_"
+            # Manejo de excepciones específicas
+            $errorMessage = $_.Exception.Message
+            Write-Host "Error al instalar $program: $errorMessage"
+            
+            # Si el error es un problema de checksum o de conectividad, lo manejamos de forma especial
+            if ($errorMessage -like "*checksum*" -or $errorMessage -like "*verificación*") {
+                Write-Host "Error relacionado con el checksum o la verificación. Omisión de checksum aplicada."
+            }
+            if ($errorMessage -like "*no se puede encontrar el paquete*") {
+                Write-Host "Error: El paquete $program no está disponible o no se pudo encontrar."
+            }
+            if ($errorMessage -like "*sin conexión*") {
+                Write-Host "Error: No se puede conectar al servidor de Chocolatey. Verifica tu conexión a Internet."
+            }
+
+            # Agregar el programa fallido a la lista
             $failedPrograms += $program
         }
     }
