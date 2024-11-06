@@ -37,15 +37,24 @@ function Show-ProgressBar {
     Write-Progress -Activity "Instalando programas" -Status "Instalando: $program" -PercentComplete $progress
 }
 
-# Función para verificar la conectividad a Internet
+# Función para verificar la conectividad a Internet sin realizar solicitudes HTTP
 function Test-InternetConnection {
-    $url = "https://www.google.com"
-    try {
-        $response = Invoke-WebRequest -Uri $url -UseBasicPatching -TimeoutSec 10
-        return $true
-    } catch {
-        return $false
+    $hosts = @("google.com", "bing.com", "github.com")  # Lista de servidores para hacer ping
+    foreach ($host in $hosts) {
+        try {
+            $ping = Test-Connection -ComputerName $host -Count 1 -Quiet
+            if ($ping) {
+                Write-Host "Conexión exitosa a $host."
+                return $true
+            } else {
+                Write-Host "No se puede hacer ping a $host."
+            }
+        } catch {
+            Write-Host "Error al intentar hacer ping a $host: $($_.Exception.Message)"
+        }
     }
+    Write-Host "No se pudo establecer conexión a Internet."
+    return $false
 }
 
 # Verificar conexión a Internet
@@ -204,5 +213,5 @@ switch ($selection) {
 }
 
 Write-Host "Desarrollado por TRSHWKUP O_O."
-Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.1 Desplegada 5/11/2024"
+Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.2.1 Desplegada 5/11/2024"
 Write-Log "Script ejecutado exitosamente."
