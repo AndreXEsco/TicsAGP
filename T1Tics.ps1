@@ -38,23 +38,19 @@ function Show-ProgressBar {
 }
 
 # Función para verificar la conectividad a Internet sin realizar solicitudes HTTP
-function Test-InternetConnection {
-    $hosts = @("google.com", "bing.com", "github.com")  # Lista de servidores para hacer ping
-    foreach ($host in $hosts) {
-        try {
-            $ping = Test-Connection -ComputerName $host -Count 1 -Quiet
-            if ($ping) {
-                Write-Host "Conexión exitosa a $host."
-                return $true
-            } else {
-                Write-Host "No se puede hacer ping a $host."
-            }
-        } catch {
-            Write-Host "Error al intentar hacer ping a $host $($_.Exception.Message)"
+$pingHosts = @("google.com", "bing.com", "github.com")  # Lista de servidores para hacer ping
+foreach ($pingHost in $pingHosts) {
+    try {
+        $ping = Test-Connection -ComputerName $pingHost -Count 1 -Quiet
+        if ($ping) {
+            Write-Host "Conexión exitosa a $pingHost."
+            return $true
+        } else {
+            Write-Host "No se puede hacer ping a $pingHost."
         }
+    } catch {
+        Write-Host "Error al intentar hacer ping a $pingHost: $($_.Exception.Message)"
     }
-    Write-Host "No se pudo establecer conexión a Internet."
-    return $false
 }
 
 # Verificar conexión a Internet
