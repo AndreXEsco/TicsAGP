@@ -49,7 +49,7 @@ foreach ($pingHost in $pingHosts) {
             Write-Host "No se puede hacer ping a $pingHost."
         }
     } catch {
-        Write-Host "Error al intentar hacer ping a $pingHost: $($_.Exception.Message)"
+        Write-Host "Error al intentar hacer ping a $pingHost $($_.Exception.Message)"
     }
 }
 
