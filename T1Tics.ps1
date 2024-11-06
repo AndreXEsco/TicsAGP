@@ -37,27 +37,33 @@ function Show-ProgressBar {
     Write-Progress -Activity "Instalando programas" -Status "Instalando: $program" -PercentComplete $progress
 }
 
-# Función para verificar la conectividad a Internet sin realizar solicitudes HTTP
-$pingHosts = @("google.com", "bing.com", "github.com")  # Lista de servidores para hacer ping
-foreach ($pingHost in $pingHosts) {
-    try {
-        $ping = Test-Connection -ComputerName $pingHost -Count 1 -Quiet
-        if ($ping) {
-            Write-Host "Conexión exitosa a $pingHost."
-            return $true
-        } else {
-            Write-Host "No se puede hacer ping a $pingHost."
-        }
-    } catch {
-        Write-Host "Error al intentar hacer ping a $pingHost $($_.Exception.Message)"
-    }
-}
+# Función para verificar la conectividad a Internet
+function Test-InternetConnection {
+    $pingHosts = @("google.com", "bing.com", "github.com")  # Lista de servidores para hacer ping
+    $internetConnected = $false  # Inicializamos la variable como falsa
 
-# Verificar conexión a Internet
-if (-not (Test-InternetConnection)) {
-    Write-Host "No hay conexión a Internet. No se pueden instalar los programas."
-    Write-Log "Error: No hay conexión a Internet."
-    return
+    foreach ($pingHost in $pingHosts) {
+        try {
+            $ping = Test-Connection -ComputerName $pingHost -Count 1 -Quiet
+            if ($ping) {
+                Write-Host "Conexión exitosa a $pingHost."
+                $internetConnected = $true  # Conexión exitosa
+                break  # Salimos del ciclo ya que encontramos conexión
+            } else {
+                Write-Host "No se puede hacer ping a $pingHost."
+            }
+        } catch {
+            Write-Host "Error al intentar hacer ping a $pingHost $($_.Exception.Message)"
+        }
+    }
+
+    if (-not $internetConnected) {
+        Write-Host "No hay conexión a Internet. No se pueden instalar los programas."
+        Write-Log "Error: No hay conexión a Internet."
+        return  # Detenemos el script si no hay conexión
+    }
+
+    Write-Host "Conexión a Internet confirmada. Continuando con la instalación de programas..."
 }
 
 # Comprobación de versión de Chocolatey
@@ -180,20 +186,28 @@ $selection = Read-Host "Ingresa el número de la opción deseada"
 switch ($selection) {
     1 {
         Write-Host "Instalando programas..."
-        $failedPrograms = Install-Programs -programs $chocoPrograms -update $false
-        if ($failedPrograms.Count -eq 0) {
-            Write-Host "Instalación completa. Todos los programas han sido instalados."
-        } else {
-            Write-Host "Los siguientes programas no se pudieron instalar: $($failedPrograms -join ', ')"
+        # Verificar la conexión a Internet antes de continuar
+        Test-InternetConnection
+        if ($?) {  # Solo si la conexión fue exitosa
+            $failedPrograms = Install-Programs -programs $chocoPrograms -update $false
+            if ($failedPrograms.Count -eq 0) {
+                Write-Host "Instalación completa. Todos los programas han sido instalados."
+            } else {
+                Write-Host "Los siguientes programas no se pudieron instalar: $($failedPrograms -join ', ')"
+            }
         }
     }
     2 {
         Write-Host "Actualizando programas..."
-        $failedPrograms = Install-Programs -programs $chocoPrograms -update $true
-        if ($failedPrograms.Count -eq 0) {
-            Write-Host "Actualización completa. Todos los programas han sido actualizados."
-        } else {
-            Write-Host "Los siguientes programas no se pudieron actualizar: $($failedPrograms -join ', ')"
+        # Verificar la conexión a Internet antes de continuar
+        Test-InternetConnection
+        if ($?) {  # Solo si la conexión fue exitosa
+            $failedPrograms = Install-Programs -programs $chocoPrograms -update $true
+            if ($failedPrograms.Count -eq 0) {
+                Write-Host "Actualización completa. Todos los programas han sido actualizados."
+            } else {
+                Write-Host "Los siguientes programas no se pudieron actualizar: $($failedPrograms -join ', ')"
+            }
         }
     }
     3 {
@@ -209,5 +223,5 @@ switch ($selection) {
 }
 
 Write-Host "Desarrollado por TRSHWKUP O_O."
-Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.2.1 Desplegada 5/11/2024"
+Write-Host "Implementado en Área de Sistemas Ducol Group. Version 2.1 Desplegada 5/11/2024"
 Write-Log "Script ejecutado exitosamente."
