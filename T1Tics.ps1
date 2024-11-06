@@ -50,7 +50,7 @@ function Test-InternetConnection {
                 Write-Host "No se puede hacer ping a $host."
             }
         } catch {
-            Write-Host "Error al intentar hacer ping a $host: $($_.Exception.Message)"
+            Write-Host "Error al intentar hacer ping a $host $($_.Exception.Message)"
         }
     }
     Write-Host "No se pudo establecer conexión a Internet."
