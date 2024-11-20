@@ -211,20 +211,23 @@ function Check-InstallationStatus {
     }
 }
 
-# Menú principal
+# Mostrar menú interactivo
 function Show-Menu {
     Write-Host "Seleccione una opción:"
     Write-Host "1: Instalar programas"
     Write-Host "2: Actualizar programas"
     Write-Host "3: Verificar estado de instalación"
     Write-Host "4: Gestionar lista de programas"
-    Write-Host "5: Salir"
+    Write-Host "5: Buscar paquetes en la comunidad de Chocolatey"
+    Write-Host "6: Salir"
 }
 
+# Ejecución principal con menú
 do {
     Show-Menu
     $selection = Read-Host "Ingrese el número de la opción deseada"
-    if ($selection -match '^[1-5]$') {
+
+    if ($selection -match '^[1-6]$') {
         switch ($selection) {
             1 {
                 if (Test-InternetConnection) {
@@ -238,4 +241,32 @@ do {
             }
             2 {
                 if (Test-InternetConnection) {
-                    $failedPrograms
+                    $failedPrograms = Install-Programs -programs $chocoPrograms -update $true
+                    if ($failedPrograms.Count -eq 0) {
+                        Write-Host "Actualización completa. Todos los programas han sido actualizados."
+                    } else {
+                        Write-Host "Los siguientes programas no se pudieron actualizar: $($failedPrograms -join ', ')"
+                    }
+                }
+            }
+            3 {
+                Check-InstallationStatus
+            }
+            4 {
+                Manage-ProgramList
+            }
+            5 {
+                Search-ChocolateyPackages
+            }
+            6 {
+                Write-Host "Saliendo..."
+                exit
+            }
+            default {
+                Write-Host "Opción no válida."
+            }
+        }
+    } else {
+        Write-Host "Opción no válida. Por favor, elija un número entre 1 y 6."
+    }
+} while ($selection -ne "6")
