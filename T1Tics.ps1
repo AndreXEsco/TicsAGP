@@ -56,7 +56,7 @@ function Test-InternetConnection {
                 break
             }
         } catch {
-            Write-Host "Error al intentar hacer ping a $pingHost: $($_.Exception.Message)"
+            Write-Host "Error al intentar hacer ping a $pingHost $($_.Exception.Message)"
         }
     }
 
@@ -147,8 +147,8 @@ function Install-Programs {
 
             Show-ProgressBar -program $program -currentProgram $currentProgram -totalPrograms $totalPrograms
         } catch {
-            Write-Host "Error al $action $program: $($_.Exception.Message)"
-            Write-Log "Error al $action $program: $($_.Exception.Message)" -level "ERROR"
+            Write-Host "Error al $action $program $($_.Exception.Message)"
+            Write-Log "Error al $action $program $($_.Exception.Message)" -level "ERROR"
             $failedPrograms += $program
         }
     }
