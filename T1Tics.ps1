@@ -93,12 +93,12 @@ function Check-ChocolateyVersion {
 $chocoPrograms = @(
     "googlechrome",
     "vlc",
-    "adobereader",
+    "foxitreader",
     "7zip",
     "tsprintclient",
     "webview2-runtime",
     "lightshot",
-    "anydesk",
+    "",
     "microsoft-teams-new-bootstrapper"
 )
 
