@@ -39,7 +39,7 @@ function Show-ProgressBar {
     )
 
     $progress = [math]::Round(($currentProgram / $totalPrograms) * 100)
-    Write-Progress -Activity "Instalando programas" -Status "Instalando: $program" -PercentComplete $progress
+    Write-Progress -Activity "Instalando la lista de programas" -Status "Se esta Instalando: $program" -PercentComplete $progress
 }
 
 # Función para verificar la conectividad a Internet
@@ -56,12 +56,12 @@ function Test-InternetConnection {
                 break
             }
         } catch {
-            Write-Host "Error al intentar hacer ping a $pingHost $($_.Exception.Message)"
+            Write-Host "Error al intentar conectarte a $pingHost $($_.Exception.Message)"
         }
     }
 
     if (-not $internetConnected) {
-        Write-Host "No hay conexión a Internet. Deteniendo el script."
+        Write-Host "No tienes conexion a internet. Detendremos el script te recomendamos revisar tu conexion a internet."
         Write-Log "Error: No hay conexión a Internet." -level "ERROR"
         return $false
     }
