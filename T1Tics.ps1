@@ -71,7 +71,7 @@ function Test-InternetConnection {
 }
 
 # Función para verificar y actualizar Chocolatey
-function Check-ChocolateyVersion {
+function Test-ChocolateyVersion {
     try {
         Write-Host "Comprobando actualizaciones de Chocolatey..."
         $upgradeAvailable = choco outdated | Select-String -Pattern "chocolatey"
@@ -103,13 +103,13 @@ $chocoPrograms = @(
 )
 
 # Función para comprobar si un programa está instalado
-function Is-ProgramInstalled {
+function Get-ProgramInstalled {
     param (
         [string]$program
     )
 
     $installed = choco list --local-only | Select-String $program
-    return $installed -ne $null
+    return $null -ne $installed
 }
 
 # Función para instalar o actualizar programas
@@ -126,7 +126,7 @@ function Install-Programs {
     foreach ($program in $programs) {
         $currentProgram++
         try {
-            if ($update -or -not (Is-ProgramInstalled -program $program)) {
+            if ($update -or -not (Get-ProgramInstalled -program $program)) {
                 $action = if ($update) { "Actualizando" } else { "Instalando" }
                 Write-Host "$action $program..."
                 Write-Log "$action $program..." -level "INFO"
@@ -157,7 +157,7 @@ function Install-Programs {
 }
 
 # Función para gestionar la lista de programas
-function Manage-ProgramList {
+function Edit-ProgramList {
     do {
         Write-Host "Gestión de programas:"
         Write-Host "1: Ver lista de programas"
@@ -198,10 +198,10 @@ function Manage-ProgramList {
 }
 
 # Función para verificar el estado de los programas
-function Check-InstallationStatus {
+function Test-InstallationStatus {
     Write-Host "Comprobando el estado de instalación..."
     foreach ($program in $chocoPrograms) {
-        if (Is-ProgramInstalled -program $program) {
+        if (Get-ProgramInstalled -program $program) {
             Write-Host "$program está instalado."
             Write-Log "$program está instalado." -level "INFO"
         } else {
@@ -250,10 +250,10 @@ do {
                 }
             }
             3 {
-                Check-InstallationStatus
+                Test-InstallationStatus
             }
             4 {
-                Manage-ProgramList
+                Edit-ProgramList
             }
             5 {
                 Search-ChocolateyPackages
