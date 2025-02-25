@@ -1,13 +1,3 @@
-# Archivo de log
-$logFile = "C:\Chocolatey_Install_Log.txt"
-function Write-Log {
-    param (
-        [string]$message,
-        [string]$level = "INFO"  # Niveles: INFO, WARNING, ERROR
-    )
-    $timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-    "$timestamp [$level] - $message" | Out-File -Append -FilePath $logFile
-}
 
 # Verificar e instalar Chocolatey si no está presente
 if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
@@ -270,3 +260,21 @@ do {
         Write-Host "Opción no válida. Por favor, elija un número entre 1 y 6."
     }
 } while ($selection -ne "6")
+
+# Fin del script
+Write-Host "Desarrollado Por: TicsAGP V1.0"
+Write-Host "Gracias por usar nuestro script."                                       
+Write-Log "Fin del script." -level "INFO"
+```
+### "Futuras Mejoras y Actualizaciones" 
+# - [ ] Agregar la función de búsqueda de paquetes en la comunidad de Chocolatey.
+# - [ ] Agregar la función de desinstalación de programas.
+# - [ ] Agregar la función de actualización de programas.
+# - [ ] Agregar la función de actualización de Chocolatey Automatica.
+# - [ ] Agregar la función de actualización de Windows Automatica.
+# - [ ] Agregar la función de actualización de Drivers Automatica.
+# - [ ] Agregar la función de actualización de BIOS Automatica.
+# - [ ] Agregar la función de actualización de Firmware Automatica.
+# - [ ] Agregar la función de actualización de Software Automatica.
+# - [ ] Agregar la función de actualización de Antivirus Automatica.
+   
