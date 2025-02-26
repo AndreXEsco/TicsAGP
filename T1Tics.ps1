@@ -1,23 +1,18 @@
-
 # Verificar e instalar Chocolatey si no está presente
 if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey no está instalado. Iniciando la instalación..."
-    Write-Log "Chocolatey no está instalado. Iniciando la instalación..." -level "WARNING"
 
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
     try {
         Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         Write-Host "Chocolatey se ha instalado correctamente."
-        Write-Log "Chocolatey instalado correctamente." -level "INFO"
     } catch {
         Write-Host "Error durante la instalación de Chocolatey: $_"
-        Write-Log "Error durante la instalación de Chocolatey: $_" -level "ERROR"
         return
     }
 } else {
     Write-Host "Chocolatey ya está instalado."
-    Write-Log "Chocolatey ya estaba instalado." -level "INFO"
 }
 
 # Función para mostrar barra de progreso
@@ -52,7 +47,6 @@ function Test-InternetConnection {
 
     if (-not $internetConnected) {
         Write-Host "No tienes conexion a internet. Detendremos el script te recomendamos revisar tu conexion a internet."
-        Write-Log "Error: No hay conexión a Internet." -level "ERROR"
         return $false
     }
 
@@ -67,30 +61,83 @@ function Test-ChocolateyVersion {
         $upgradeAvailable = choco outdated | Select-String -Pattern "chocolatey"
         if ($upgradeAvailable) {
             Write-Host "Chocolatey no está actualizado. Actualizando..."
-            Write-Log "Actualizando Chocolatey." -level "WARNING"
             choco upgrade chocolatey -y
         } else {
             Write-Host "Chocolatey está actualizado."
-            Write-Log "Chocolatey está actualizado." -level "INFO"
         }
     } catch {
         Write-Host "Error al comprobar la versión de Chocolatey: $($_.Exception.Message)"
-        Write-Log "Error al comprobar la versión de Chocolatey: $($_.Exception.Message)" -level "ERROR"
     }
 }
 
 # Lista inicial de programas
 $chocoPrograms = @(
     "googlechrome",
-    "vlc",
     "foxitreader",
-    "7zip",
+    "7zip.install",
     "tsprintclient",
     "webview2-runtime",
     "lightshot",
-    "",
-    "microsoft-teams-new-bootstrapper"
+    "microsoft-teams-new-bootstrapper",
+    "posfordotnet.install",
+    "splashtop-streamer-deployment",
+    "fusioninventory-agent.install",
+    "dotnet3.5",
+    "dotnet4.5.2"
 )
+
+# Preguntar al usuario qué fondo quiere instalar
+$opcion = Read-Host "Seleccione el fondo de pantalla (1-Agropaisa, 2-Agromilenio, 3-Ducol)"
+
+# Definir URLs de las imágenes
+$fondoAgropaisa = "http://192.168.99.14:8880/DESCARGAS/10.Fondo/Fondo/NUEVO%20AGROPAISA.png"
+$fondoAgromilenio = "http://192.168.99.14:8880/DESCARGAS/10.Fondo/Fondo/fondo%20agromilenio.jpg"
+$fondoDucol = "http://192.168.99.14:8880/DESCARGAS/10.Fondo/Fondo/FONDO%20DUCOL.png"
+
+# Definir ruta local para guardar el fondo
+$fondoLocal = "$env:USERPROFILE\Desktop\wallpaper.jpg"
+
+# Seleccionar el fondo según la opción ingresada
+switch ($opcion) {
+    "1" { $urlFondo = $fondoAgropaisa }
+    "2" { $urlFondo = $fondoAgromilenio }
+    "3" { $urlFondo = $fondoDucol }
+    default {
+        Write-Host "Opción no válida. Saliendo..." -ForegroundColor Red
+        exit
+    }
+}
+
+# Descargar la imagen
+Invoke-WebRequest -Uri $urlFondo -OutFile $fondoLocal
+
+# Aplicar el fondo de pantalla en la política de Windows
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "Wallpaper" -Value $fondoLocal -Force
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "WallpaperStyle" -Value 2 -Force
+
+# Bloquear cambio de fondo de pantalla
+New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" -Force
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" -Name "NoChangingWallPaper" -Value 1 -Force
+
+# Desactivar Hotspot Móvil
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" -Name "NC_ShowSharedAccessUI" -Value 0 -Force
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class Wallpaper {
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+    public static void SetWallpaper(string path) {
+        SystemParametersInfo(20, 0, path, 3);
+    }
+}
+"@ -Language CSharp
+
+[Wallpaper]::SetWallpaper($fondoLocal)
+
+Write-Host "Fondo de pantalla aplicado y bloqueado correctamente." -ForegroundColor Green
+Write-Host "Hotspot móvil desactivado." -ForegroundColor Green
 
 # Función para comprobar si un programa está instalado
 function Get-ProgramInstalled {
@@ -119,7 +166,6 @@ function Install-Programs {
             if ($update -or -not (Get-ProgramInstalled -program $program)) {
                 $action = if ($update) { "Actualizando" } else { "Instalando" }
                 Write-Host "$action $program..."
-                Write-Log "$action $program..." -level "INFO"
 
                 $chocoCommand = if ($update) {
                     "choco upgrade $program -y --ignore-checksums"
@@ -129,16 +175,13 @@ function Install-Programs {
 
                 Invoke-Expression $chocoCommand
                 Write-Host "$program $action correctamente."
-                Write-Log "$program $action correctamente." -level "INFO"
             } else {
                 Write-Host "$program ya está instalado. Omitiendo."
-                Write-Log "$program ya está instalado. Omitiendo." -level "INFO"
             }
 
             Show-ProgressBar -program $program -currentProgram $currentProgram -totalPrograms $totalPrograms
         } catch {
             Write-Host "Error al $action $program $($_.Exception.Message)"
-            Write-Log "Error al $action $program $($_.Exception.Message)" -level "ERROR"
             $failedPrograms += $program
         }
     }
@@ -166,7 +209,6 @@ function Edit-ProgramList {
                 if (-not ($chocoPrograms -contains $newProgram)) {
                     $chocoPrograms += $newProgram
                     Write-Host "$newProgram agregado a la lista."
-                    Write-Log "$newProgram agregado a la lista." -level "INFO"
                 } else {
                     Write-Host "El programa ya está en la lista."
                 }
@@ -176,7 +218,6 @@ function Edit-ProgramList {
                 if ($chocoPrograms -contains $removeProgram) {
                     $chocoPrograms = $chocoPrograms | Where-Object { $_ -ne $removeProgram }
                     Write-Host "$removeProgram eliminado de la lista."
-                    Write-Log "$removeProgram eliminado de la lista." -level "INFO"
                 } else {
                     Write-Host "El programa no está en la lista."
                 }
@@ -193,10 +234,8 @@ function Test-InstallationStatus {
     foreach ($program in $chocoPrograms) {
         if (Get-ProgramInstalled -program $program) {
             Write-Host "$program está instalado."
-            Write-Log "$program está instalado." -level "INFO"
         } else {
             Write-Host "$program no está instalado."
-            Write-Log "$program no está instalado." -level "WARNING"
         }
     }
 }
@@ -263,18 +302,11 @@ do {
 
 # Fin del script
 Write-Host "Desarrollado Por: TicsAGP V1.0"
-Write-Host "Gracias por usar nuestro script."                                       
-Write-Log "Fin del script." -level "INFO"
+Write-Host "Gracias por usar nuestro script."
 ```
 ### "Futuras Mejoras y Actualizaciones" 
 # - [ ] Agregar la función de búsqueda de paquetes en la comunidad de Chocolatey.
 # - [ ] Agregar la función de desinstalación de programas.
-# - [ ] Agregar la función de actualización de programas.
 # - [ ] Agregar la función de actualización de Chocolatey Automatica.
-# - [ ] Agregar la función de actualización de Windows Automatica.
-# - [ ] Agregar la función de actualización de Drivers Automatica.
-# - [ ] Agregar la función de actualización de BIOS Automatica.
-# - [ ] Agregar la función de actualización de Firmware Automatica.
-# - [ ] Agregar la función de actualización de Software Automatica.
-# - [ ] Agregar la función de actualización de Antivirus Automatica.
-   
+# - [ ] Integrar la interfaz Grafica en WFP (Windows Presentation Foundation).
+# - [ ] Integrar la interfaz Grafica en WinForms (Windows Forms).
