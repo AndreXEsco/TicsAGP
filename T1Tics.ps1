@@ -300,10 +300,6 @@ do {
     }
 } while ($selection -ne "6")
 
-# Fin del script
-Write-Host "Desarrollado Por: TicsAGP V1.0"
-Write-Host "Gracias por usar nuestro script."
-```
 ### "Futuras Mejoras y Actualizaciones" 
 # - [ ] Agregar la función de búsqueda de paquetes en la comunidad de Chocolatey.
 # - [ ] Agregar la función de desinstalación de programas.
