@@ -80,11 +80,16 @@ $chocoPrograms = @(
     "lightshot",
     "microsoft-teams-new-bootstrapper",
     "posfordotnet.install",
-    "splashtop-streamer-deployment",
-    "fusioninventory-agent.install",
+    "dotnet4.5.2",
+    "fusioninventory-agent",
     "dotnet3.5",
-    "dotnet4.5.2"
+    "splashtop-streamer"
 )
+
+# evitar que fusioninventory-agent se instale de manera silenciosa y para que el usuario configure el servidor de inventario
+$chocoPrograms = $chocoPrograms | Where-Object { $_ -ne "fusioninventory-agent" }
+$env:FORCE_FUSIONINVENTORY_AGENT_INSTALL = "1"
+
 
 # Preguntar al usuario qué fondo quiere instalar
 $opcion = Read-Host "Seleccione el fondo de pantalla (1-Agropaisa, 2-Agromilenio, 3-Ducol)"
@@ -107,6 +112,7 @@ switch ($opcion) {
         exit
     }
 }
+### Pequeñas Modificaciones y Tweaks ###
 
 # Descargar la imagen
 Invoke-WebRequest -Uri $urlFondo -OutFile $fondoLocal
@@ -118,6 +124,17 @@ Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies
 # Bloquear cambio de fondo de pantalla
 New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" -Force
 Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\ActiveDesktop" -Name "NoChangingWallPaper" -Value 1 -Force
+
+# Cambiar el nombre de la Maquina
+$nombreMaquina = Read-Host "Ingrese el nombre de el equipo"
+Rename-Computer -NewName $nombreMaquina -Force
+
+# Cambiar la zona horaria a Colombia UTC-5 y sincronizar La Hora al servidor time.windows.com
+Set-TimeZone -Id "SA Pacific Standard Time"
+w32tm /config /manualpeerlist:time.windows.com /syncfromflags:manual /update
+Restart-Service w32time
+w32tm /resync
+
 
 # Desactivar Hotspot Móvil
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" -Name "NC_ShowSharedAccessUI" -Value 0 -Force
@@ -136,8 +153,9 @@ public class Wallpaper {
 
 [Wallpaper]::SetWallpaper($fondoLocal)
 
-Write-Host "Fondo de pantalla aplicado y bloqueado correctamente." -ForegroundColor Green
+Write-Host "Fondo de pantalla aplicado y bloqueado correctamente." -ForegroundColor Green 
 Write-Host "Hotspot móvil desactivado." -ForegroundColor Green
+write-host "Nombre de la maquina cambiado a $nombreMaquina, Veras los cambios aplicados despues de Reiniciar :)" -ForegroundColor Green
 
 # Función para comprobar si un programa está instalado
 function Get-ProgramInstalled {
@@ -300,9 +318,12 @@ do {
     }
 } while ($selection -ne "6")
 
+
 ### "Futuras Mejoras y Actualizaciones" 
 # - [ ] Agregar la función de búsqueda de paquetes en la comunidad de Chocolatey.
 # - [ ] Agregar la función de desinstalación de programas.
 # - [ ] Agregar la función de actualización de Chocolatey Automatica.
 # - [ ] Integrar la interfaz Grafica en WFP (Windows Presentation Foundation).
 # - [ ] Integrar la interfaz Grafica en WinForms (Windows Forms).
+
+
