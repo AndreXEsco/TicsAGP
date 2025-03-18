@@ -51,7 +51,7 @@ function Test-InternetConnection {
     }
 
     Write-Host "Conexión a Internet confirmada."
-    return $true
+    return $true 
 }
 
 # Función para verificar y actualizar Chocolatey
@@ -81,15 +81,9 @@ $chocoPrograms = @(
     "microsoft-teams-new-bootstrapper",
     "posfordotnet.install",
     "dotnet4.5.2",
-    "fusioninventory-agent",
     "dotnet3.5",
     "splashtop-streamer"
 )
-
-# evitar que fusioninventory-agent se instale de manera silenciosa y para que el usuario configure el servidor de inventario
-$chocoPrograms = $chocoPrograms | Where-Object { $_ -ne "fusioninventory-agent" }
-$env:FORCE_FUSIONINVENTORY_AGENT_INSTALL = "1"
-
 
 # Preguntar al usuario qué fondo quiere instalar
 $opcion = Read-Host "Seleccione el fondo de pantalla (1-Agropaisa, 2-Agromilenio, 3-Ducol)"
@@ -112,6 +106,7 @@ switch ($opcion) {
         exit
     }
 }
+
 ### Pequeñas Modificaciones y Tweaks ###
 
 # Descargar la imagen
@@ -156,6 +151,7 @@ public class Wallpaper {
 Write-Host "Fondo de pantalla aplicado y bloqueado correctamente." -ForegroundColor Green 
 Write-Host "Hotspot móvil desactivado." -ForegroundColor Green
 write-host "Nombre de la maquina cambiado a $nombreMaquina, Veras los cambios aplicados despues de Reiniciar :)" -ForegroundColor Green
+Write-Host "" -ForegroundColor Green
 
 # Función para comprobar si un programa está instalado
 function Get-ProgramInstalled {
