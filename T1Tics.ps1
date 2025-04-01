@@ -86,7 +86,15 @@ $chocoPrograms = @(
 )
 
 # Preguntar al usuario qué fondo quiere instalar
-$opcion = Read-Host "Seleccione el fondo de pantalla (1-Agropaisa, 2-Agromilenio, 3-Ducol)"
+$opcion = Read-Host "
+
+*Elija que Fondo de Pantalla quiere Usar*
+
+1-Agropaisa
+2-Agromilenio
+3-Ducol
+
+"
 
 # Definir URLs de las imágenes
 $fondoAgropaisa = "http://192.168.99.14:8880/DESCARGAS/10.Fondo/Fondo/NUEVO%20AGROPAISA.png"
@@ -122,6 +130,12 @@ Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies
 
 # Cambiar el nombre de la Maquina
 $nombreMaquina = Read-Host "Ingrese el nombre de el equipo"
+Write-Host "Si desea omitir el cambio de nombre de la maquina, presione Enter sin escribir nada."
+if ($nombreMaquina -eq "") {
+    Write-Host "Omitiendo el cambio de nombre de la máquina."
+} else {
+    Write-Host "Cambiando el nombre de la máquina a $nombreMaquina..."
+}   
 Rename-Computer -NewName $nombreMaquina -Force
 
 # Cambiar la zona horaria a Colombia UTC-5 y sincronizar La Hora al servidor time.windows.com
@@ -133,6 +147,11 @@ w32tm /resync
 
 # Desactivar Hotspot Móvil
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" -Name "NC_ShowSharedAccessUI" -Value 0 -Force
+
+# Desactivar servicios de Gaming (Trazabilidad y demas Bloatware)
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\default\Gaming\AllowGameDVR" -Name "Value" -Value 0 -Force
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\PolicyManager\default\Games\AllowAdvancedGamingServices" -Name "Value" -Value 0 -Force
+
 
 Add-Type -TypeDefinition @"
 using System;
@@ -151,7 +170,7 @@ public class Wallpaper {
 Write-Host "Fondo de pantalla aplicado y bloqueado correctamente." -ForegroundColor Green 
 Write-Host "Hotspot móvil desactivado." -ForegroundColor Green
 write-host "Nombre de la maquina cambiado a $nombreMaquina, Veras los cambios aplicados despues de Reiniciar :)" -ForegroundColor Green
-Write-Host "" -ForegroundColor Green
+
 
 # Función para comprobar si un programa está instalado
 function Get-ProgramInstalled {
